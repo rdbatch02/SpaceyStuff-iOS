@@ -1,0 +1,15 @@
+//
+//  spaceyStuffAppDelegate.h
+//  Spacey Stuff
+//
+//  Created by Ryan Batchelder on 10/31/13.
+//  Copyright (c) 2013 Ryan Batchelder. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface spaceyStuffAppDelegate : UIResponder <UIApplicationDelegate>
+
+@property (strong, nonatomic) UIWindow *window;
+
+@end
