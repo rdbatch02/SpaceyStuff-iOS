@@ -13,23 +13,39 @@
 @property (nonatomic) SKSpriteNode * player;
 @property (nonatomic) NSTimeInterval lastSpawnTimeInterval;
 @property (nonatomic) NSTimeInterval lastUpdateTimeInterval;
+@property (nonatomic) SKLabelNode* scoreBoard;
 @end
 
 @implementation spaceyStuffMyScene
 
 static const uint32_t projectileCategory = 0x1 << 0;
 static const uint32_t enemyCategory = 0x1 << 1;
+int score = 0;
 
 -(id)initWithSize:(CGSize)size {    
     if (self = [super initWithSize:size]) {
         
         NSLog(@"Size: %@", NSStringFromCGSize(size));
         
-        self.backgroundColor = [SKColor colorWithRed:0 green:0 blue:0 alpha:1];
+        self.backgroundColor = [SKColor colorWithRed:0 green:0 blue:0 alpha:0];
+        
+//        SKSpriteNode * bg = [SKSpriteNode spriteNodeWithImageNamed:@"images/background.gif"];
+//        bg.anchorPoint = CGPointZero;
+//        bg.name = @"background";
+//        [self addChild:bg];
         
         self.player = [SKSpriteNode spriteNodeWithImageNamed:@"images/SpaceShip"];
         self.player.position = CGPointMake(50, self.frame.size.height/2);
         [self addChild:self.player];
+        
+        self.scoreBoard = [SKLabelNode labelNodeWithFontNamed:@"Helvetica"];
+        
+        self.scoreBoard.text = [NSString stringWithFormat:@"Score: %d", score];
+        self.scoreBoard.fontSize = 15;
+        self.scoreBoard.fontColor = [SKColor colorWithRed:1 green:1 blue:1 alpha:1];
+        self.scoreBoard.position = CGPointMake(self.scene.size.width/2, self.scene.size.height-30);\
+        [self addChild:self.scoreBoard];
+
         
         self.physicsWorld.gravity = CGVectorMake(0, 0);
         self.physicsWorld.contactDelegate = self;
@@ -52,7 +68,9 @@ static const uint32_t enemyCategory = 0x1 << 1;
 -(void)addEnemy {
     SKSpriteNode * enemy = [SKSpriteNode spriteNodeWithImageNamed:@"images/BaddieShip"];
     
-    enemy.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:enemy.size];
+    CGSize enemySize = CGSizeMake(25, 25);
+    
+    enemy.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:enemySize];
     enemy.physicsBody.dynamic = YES;
     enemy.physicsBody.categoryBitMask = enemyCategory;
     enemy.physicsBody.contactTestBitMask = projectileCategory;
@@ -105,17 +123,32 @@ static const uint32_t enemyCategory = 0x1 << 1;
 //}
 
 -(void)didMoveToView:(SKView *)view {
-    UIPanGestureRecognizer *gestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanFrom:)];
-    [[self view] addGestureRecognizer:gestureRecognizer];
+    UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanFrom:)];
+    panGestureRecognizer.cancelsTouchesInView = NO;
+    panGestureRecognizer.delegate = self;
+    [[self view] addGestureRecognizer:panGestureRecognizer];
+    
+    UITapGestureRecognizer *singleTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTap:)];
+    singleTapGestureRecognizer.numberOfTapsRequired = 1;
+    singleTapGestureRecognizer.enabled = YES;
+    singleTapGestureRecognizer.cancelsTouchesInView = NO;
+    singleTapGestureRecognizer.delegate = self;
+    [[self view] addGestureRecognizer:singleTapGestureRecognizer];
 }
 
--(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-    UITouch * touch = [touches anyObject];
+-(bool)gestureRecognizer:(UIGestureRecognizer *)singleTapGestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UITapGestureRecognizer *)panGestureRecognizer {
+    return YES;
+}
+
+-(void)singleTap:(UITapGestureRecognizer *)gesture {
+//-(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+    //UITouch * touch = [touches anyObject];
     //CGPoint location = [touch locationInNode:self];
     
     SKSpriteNode * projectile = [SKSpriteNode spriteNodeWithImageNamed:@"images/PewPew"];
-    projectile.position = self.player.position;
-    projectile.physicsBody = [SKPhysicsBody bodyWithCircleOfRadius:projectile.size.width/2];
+    projectile.position = CGPointMake(self.player.position.x+5, self.player.position.y);
+    CGSize projectileSize = CGSizeMake(15, 25);
+    projectile.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:projectileSize];
     projectile.physicsBody.dynamic = YES;
     projectile.physicsBody.categoryBitMask = projectileCategory;
     projectile.physicsBody.contactTestBitMask = enemyCategory;
@@ -134,6 +167,8 @@ static const uint32_t enemyCategory = 0x1 << 1;
 
 -(void)projectile:(SKSpriteNode *)projectile didCollideWithEnemy:(SKSpriteNode *)enemy {
     NSLog(@"Hit");
+    score++;
+    self.scoreBoard.text = [NSString stringWithFormat:@"Score: %d", score];
     [projectile removeFromParent];
     [enemy removeFromParent];
 }
@@ -156,37 +191,19 @@ static const uint32_t enemyCategory = 0x1 << 1;
 }
 
 -(void)handlePanFrom:(UIPanGestureRecognizer *)recognizer {
-    if (recognizer.state == UIGestureRecognizerStateBegan) {
-        CGPoint touchLocation = [recognizer locationInView:recognizer.view];
-    } else if (recognizer.state == UIGestureRecognizerStateChanged) {
+    if (recognizer.state == UIGestureRecognizerStateChanged) {
         CGPoint translation = [recognizer translationInView:recognizer.view];
         translation = CGPointMake(100, -translation.y);
         [self.player setPosition:CGPointMake(self.player.position.x, self.player.position.y + translation.y)];
+        if (self.player.position.y > self.scene.size.height + 50)
+            [self.player setPosition:CGPointMake(self.player.position.x, -50)];
+        else if (self.player.position.y < -50)
+            [self.player setPosition:CGPointMake(self.player.position.x, self.scene.size.height+50)];
         [recognizer setTranslation:CGPointZero inView:recognizer.view];
-    } else if (recognizer.state == UIGestureRecognizerStateEnded) {
-        
     }
     
 }
 
-//
-//-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-//    /* Called when a touch begins */
-//    
-//    for (UITouch *touch in touches) {
-//        CGPoint location = [touch locationInNode:self];
-//        
-//        SKSpriteNode *sprite = [SKSpriteNode spriteNodeWithImageNamed:@"SpaceShip"];
-//        
-//        sprite.position = location;
-//        
-//        SKAction *action = [SKAction rotateByAngle:M_PI duration:1];
-//        
-//        [sprite runAction:[SKAction repeatActionForever:action]];
-//        
-//        [self addChild:sprite];
-//    }
-//}
 
 //-(void)update:(CFTimeInterval)currentTime {
 //    /* Called before each frame is rendered */
