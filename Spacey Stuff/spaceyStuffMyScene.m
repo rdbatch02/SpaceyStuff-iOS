@@ -34,8 +34,10 @@ int lives = 3;
 bool playerOnScreen = NO;
 bool boardCleared = NO;
 NSString *scoreString;
+CGSize *frameSize;
 
--(id)initWithSize:(CGSize)size {    
+-(id)initWithSize:(CGSize)size {
+    frameSize = &size;
     if (self = [super initWithSize:size]) {
         
         NSLog(@"Size: %@", NSStringFromCGSize(size));
@@ -65,7 +67,7 @@ NSString *scoreString;
         player.physicsBody.collisionBitMask = 0;
         player.physicsBody.usesPreciseCollisionDetection = YES;
         playerOnScreen = YES;
-        [self addChild:player];
+        [self resetPlayer];
         
         NSString *scoreString = [NSString stringWithFormat:@"Score: %d Multiplier: %d Lives: %d", score, multiplier, lives];
         self.scoreBoard = [SKLabelNode labelNodeWithFontNamed:@"Helvetica"];
@@ -186,10 +188,9 @@ NSString *scoreString;
         [self addAsteroid];
         [self addBackground];
         if (!playerOnScreen) {
-            [self addChild:player];
-            playerOnScreen = YES;
+            [self resetPlayer];
         }
-        if (score % 100 == 0) {
+        if (score > 0 && score % 100 == 0) {
             lives++;
         }
     }
@@ -202,8 +203,7 @@ NSString *scoreString;
         self.lastSpawnTimeInterval = 0;
         [self addBackground];
         if (!playerOnScreen) {
-            [self addChild:player];
-            playerOnScreen = YES;
+            [self resetPlayer];
         }
     }
 }
@@ -216,6 +216,17 @@ NSString *scoreString;
     [self enumerateChildNodesWithName:[NSString stringWithFormat:@"enemy"] usingBlock:^(SKNode *node, BOOL *stop) {
         [node removeFromParent];
     }];
+
+    SKSpriteNode *replay = [SKSpriteNode spriteNodeWithImageNamed:@"images/SpaceShip3"];
+    replay.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:CGSizeMake(50, 50)];
+    replay.physicsBody.dynamic = YES;
+    replay.physicsBody.categoryBitMask = buttonCategory;
+    replay.physicsBody.contactTestBitMask = projectileCategory;
+    replay.physicsBody.collisionBitMask = 0;
+    replay.name = [NSString stringWithFormat:@"replayButton"];
+    replay.position = CGPointMake(self.size.width/2, self.size.height/2);
+    [self addChild:replay];
+    
     return YES;
 }
 
@@ -282,6 +293,12 @@ NSString *scoreString;
     [projectile runAction:[SKAction sequence:@[actionMove, actionMoveDone]]];
 }
 
+-(void)resetPlayer {
+    player.position = CGPointMake(50, self.frame.size.height/2); //Set player start position
+    playerOnScreen = YES;
+    [self addChild:player];
+}
+
 -(void)projectile:(SKSpriteNode *)projectile didCollideWithEnemy:(SKSpriteNode *)enemy {
     //NSLog(@"Hit"); Used for debugging
     score += multiplier;
@@ -293,8 +310,22 @@ NSString *scoreString;
     [enemy removeFromParent];
 }
 
+-(void)projectile:(SKSpriteNode *)projectile didCollideWithButton:(SKSpriteNode *)replay {
+    //NSLog(@"Replay Button");
+    lives = 3;
+    multiplier = 1;
+    score = 0;
+    self.scoreBoard.text = [NSString stringWithFormat:@"Score: %d Multiplier: %d Lives: %d", score, multiplier, lives];
+    self.lastSpawnTimeInterval = 0;
+    boardCleared = NO;
+    [replay removeFromParent];
+    [player removeFromParent];
+    playerOnScreen = NO;
+    
+}
+
 -(void)asteroid:(SKSpriteNode *)asteroid didCollideWithPlayer:(SKSpriteNode *)player {
-    NSLog(@"Asteroid hit");
+    //NSLog(@"Asteroid hit");
     lives--;
     multiplier = 1;
     self.scoreBoard.text = [NSString stringWithFormat:@"Score: %d Multiplier: %d Lives: %d", score, multiplier, lives];
@@ -320,6 +351,9 @@ NSString *scoreString;
     }
     if ((firstBody.categoryBitMask & asteroidCategory) != 0 && (secondBody.categoryBitMask & playerCategory) != 0) {
         [self asteroid:(SKSpriteNode *) firstBody.node didCollideWithPlayer:(SKSpriteNode *) secondBody.node];
+    }
+    if ((firstBody.categoryBitMask & projectileCategory) !=0 && (secondBody.categoryBitMask & buttonCategory) != 0) {
+        [self projectile:(SKSpriteNode *) firstBody.node didCollideWithButton:(SKSpriteNode *) secondBody.node];
     }
 }
 
