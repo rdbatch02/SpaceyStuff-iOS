@@ -10,17 +10,19 @@
 #import "spaceyStuffMyScene.h"
 
 @implementation spaceyStuffViewController
+SKView *skView;
 
 - (void)viewWillLayoutSubviews
 {
     [super viewDidLayoutSubviews];
-    SKView * skView = (SKView *)self.view;
+    skView = (SKView *)self.view;
     if (!skView.scene) {
         skView.showsFPS = NO;
         skView.showsNodeCount = NO;
         
         SKScene * scene = [spaceyStuffMyScene sceneWithSize:skView.bounds.size];
         scene.scaleMode = SKSceneScaleModeAspectFill;
+        
         
         [skView presentScene:scene];
     }
@@ -42,6 +44,16 @@
 - (BOOL)shouldAutorotate
 {
     return YES;
+}
+
+-(IBAction)pauseButton {
+    NSLog(@"%d", skView.paused);
+    if (!skView.paused) {
+        skView.paused = YES;
+    }
+    else {
+        skView.paused = NO;
+    }
 }
 
 - (NSUInteger)supportedInterfaceOrientations

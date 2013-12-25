@@ -74,7 +74,7 @@ CGSize *frameSize;
         
 //        self.scoreBoard.text = [NSString stringWithFormat:@"Score: %d Multiplier: %d", score, multiplier];
         self.scoreBoard.text = scoreString;
-        self.scoreBoard.fontSize = 15;
+        self.scoreBoard.fontSize = 18;
         self.scoreBoard.fontColor = [SKColor colorWithRed:1 green:1 blue:1 alpha:1];
         self.scoreBoard.position = CGPointMake(self.scene.size.width/2, self.scene.size.height-30);\
         [self addChild:self.scoreBoard];
@@ -217,8 +217,8 @@ CGSize *frameSize;
         [node removeFromParent];
     }];
 
-    SKSpriteNode *replay = [SKSpriteNode spriteNodeWithImageNamed:@"images/SpaceShip3"];
-    replay.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:CGSizeMake(50, 50)];
+    SKSpriteNode *replay = [SKSpriteNode spriteNodeWithImageNamed:@"images/replayButton"];
+    replay.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:CGSizeMake(100, 50)];
     replay.physicsBody.dynamic = YES;
     replay.physicsBody.categoryBitMask = buttonCategory;
     replay.physicsBody.contactTestBitMask = projectileCategory;
@@ -320,6 +320,7 @@ CGSize *frameSize;
     boardCleared = NO;
     [replay removeFromParent];
     [player removeFromParent];
+    [projectile removeFromParent];
     playerOnScreen = NO;
     
 }

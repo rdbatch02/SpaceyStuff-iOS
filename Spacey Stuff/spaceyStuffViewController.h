@@ -10,5 +10,6 @@
 #import <SpriteKit/SpriteKit.h>
 
 @interface spaceyStuffViewController : UIViewController
+@property BOOL paused;
 
 @end
