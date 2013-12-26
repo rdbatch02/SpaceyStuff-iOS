@@ -108,10 +108,10 @@
             </objects>
             <point key="canvasLocation" x="165" y="-549"/>
         </scene>
-        <!--View Controller - Ship Select-->
+        <!--Ship Select View Controller - Ship Select-->
         <scene sceneID="osS-sL-aBg">
             <objects>
-                <viewController title="Ship Select" id="L1e-vH-LU5" sceneMemberID="viewController">
+                <viewController title="Ship Select" id="L1e-vH-LU5" customClass="shipSelectViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="oiD-5N-x4O"/>
                         <viewControllerLayoutGuide type="bottom" id="ery-V4-RM4"/>
@@ -135,7 +135,8 @@
                                     <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <segue destination="LVB-YS-i5n" kind="modal" id="maY-zU-0kS"/>
+                                    <action selector="ship1" destination="L1e-vH-LU5" eventType="touchUpInside" id="9dO-cb-fAf"/>
+                                    <segue destination="LVB-YS-i5n" kind="modal" id="eD0-AD-EPa"/>
                                 </connections>
                             </button>
                             <button contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="k5z-ny-Bse">
@@ -145,6 +146,7 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
+                                    <action selector="ship2" destination="L1e-vH-LU5" eventType="touchUpInside" id="Yjv-AU-sRj"/>
                                     <segue destination="LVB-YS-i5n" kind="modal" id="BHy-OC-BfB"/>
                                 </connections>
                             </button>
@@ -238,6 +240,6 @@
         <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="maY-zU-0kS"/>
+        <segue reference="eD0-AD-EPa"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -7,7 +7,7 @@
 //
 
 #import "spaceyStuffMyScene.h"
-#import "spaceyStuffViewController.h"
+//#import "spaceyStuffViewController.h"
 #include <stdlib.h>
 
 
@@ -40,6 +40,7 @@ bool playerOnScreen = NO;
 bool boardCleared = NO;
 NSString *scoreString;
 CGSize *frameSize;
+extern int shipValue;
 
 -(id)initWithSize:(CGSize)size {
     frameSize = &size;
@@ -62,8 +63,12 @@ CGSize *frameSize;
         self.physicsWorld.gravity = CGVectorMake(0, 0);
         self.physicsWorld.contactDelegate = self;
         
-    
-        player = [SKSpriteNode spriteNodeWithImageNamed:@"images/SpaceShip"]; //Create player ship TODO: Randomize this!
+        if (shipValue == 1) {
+            player = [SKSpriteNode spriteNodeWithImageNamed:@"images/SpaceShip"]; //Create player ship TODO: Randomize this!
+        }
+        else {
+            player = [SKSpriteNode spriteNodeWithImageNamed:@"images/SpaceShip3"];
+        }
         player.position = CGPointMake(50, self.frame.size.height/2); //Set player start position
         player.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:CGSizeMake(25, 25)]; //Define the PhysicsBody for the player's collision detection
         player.physicsBody.dynamic = YES;
