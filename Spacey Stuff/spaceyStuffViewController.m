@@ -47,7 +47,6 @@ SKView *skView;
 }
 
 -(IBAction)pauseButton {
-    NSLog(@"%d", skView.paused);
     if (!skView.paused) {
         skView.paused = YES;
     }

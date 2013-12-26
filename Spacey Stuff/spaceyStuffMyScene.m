@@ -31,6 +31,8 @@ SKSpriteNode *background2;
 int score = 0;
 int multiplier = 1;
 int lives = 3;
+int asteroidCount = 0;
+int enemyCount = 0;
 bool playerOnScreen = NO;
 bool boardCleared = NO;
 NSString *scoreString;
@@ -102,6 +104,7 @@ CGSize *frameSize;
     int randEnemy = arc4random_uniform(2)+1;
     
     NSString *enemyType = [NSString stringWithFormat:@"images/BaddieShip%d", randEnemy];
+    enemyCount++;
     
     SKSpriteNode * enemy = [SKSpriteNode spriteNodeWithImageNamed:enemyType];
 
@@ -115,7 +118,7 @@ CGSize *frameSize;
     
     enemy.name = [NSString stringWithFormat:@"enemy"];
     
-    int minY = enemy.size.height / 2;
+    int minY = 25;
     int maxY = self.frame.size.height - enemy.size.height / 2;
     int rangeY = maxY - minY;
     int actualY = (arc4random() % rangeY) + minY;
@@ -130,11 +133,14 @@ CGSize *frameSize;
     
     SKAction * actionMove = [SKAction moveTo:CGPointMake(-enemy.size.width/2, actualY) duration:actualDuration];
     SKAction * actionMoveDone = [SKAction removeFromParent];
-    [enemy runAction:[SKAction sequence:@[actionMove, actionMoveDone]]];
+    [enemy runAction:[SKAction sequence:@[actionMove, [SKAction group:@[actionMoveDone, [SKAction runBlock:^{
+        enemyCount--;
+    }]]]]]];
 }
 
 -(void)addAsteroid {
     SKSpriteNode * asteroid = [SKSpriteNode spriteNodeWithImageNamed:@"images/asteroid"];
+    asteroidCount++;
     
     //CGSize asteroidSize = CGSizeMake(asteroid.size.width, asteroid.size.height);
     
@@ -165,7 +171,9 @@ CGSize *frameSize;
     SKAction * asteroidSpin = [SKAction rotateByAngle:actualDuration duration:0.5];
     SKAction * actionMove = [SKAction moveTo:CGPointMake(-asteroid.size.width/2, actualY) duration:actualDuration];
     SKAction * actionMoveDone = [SKAction removeFromParent];
-    [asteroid runAction:[SKAction sequence:@[actionMove, actionMoveDone]]];
+    [asteroid runAction:[SKAction sequence:@[actionMove, [SKAction group:@[actionMoveDone, [SKAction runBlock:^{
+        asteroidCount--;
+    }]]]]]];
     [asteroid runAction:[SKAction repeatActionForever:asteroidSpin]];
 }
 
@@ -184,13 +192,17 @@ CGSize *frameSize;
     self.lastSpawnTimeInterval += timeSinceLast;
     if (self.lastSpawnTimeInterval > 1 && lives > 0) {
         self.lastSpawnTimeInterval = 0;
-        [self addEnemy];
-        [self addAsteroid];
+        if (enemyCount < 4) {
+            [self addEnemy];
+        }
+        if (asteroidCount < 4) {
+            [self addAsteroid];
+        }
         [self addBackground];
         if (!playerOnScreen) {
             [self resetPlayer];
         }
-        if (score > 0 && score % 100 == 0) {
+        if (multiplier % 5 == 0) {
             lives++;
         }
     }
@@ -209,7 +221,7 @@ CGSize *frameSize;
 }
 
 -(BOOL)doClearBoard {
-    self.scoreBoard.text = [NSString stringWithFormat:@"Game Over!"];
+    self.scoreBoard.text = [NSString stringWithFormat:@"Game Over!\nFinal Score: %d", score];
     [self enumerateChildNodesWithName:[NSString stringWithFormat:@"asteroid"] usingBlock:^(SKNode *node, BOOL *stop) {
         [node removeFromParent];
     }];
@@ -363,10 +375,10 @@ CGSize *frameSize;
         CGPoint translation = [recognizer translationInView:recognizer.view];
         translation = CGPointMake(100, -translation.y);
         [player setPosition:CGPointMake(player.position.x, player.position.y + translation.y)];
-        if (player.position.y > self.scene.size.height + 50)
-            [player setPosition:CGPointMake(player.position.x, -50)];
-        else if (player.position.y < -50)
-            [player setPosition:CGPointMake(player.position.x, self.scene.size.height+50)];
+        if (player.position.y > self.scene.size.height + 15)
+            [player setPosition:CGPointMake(player.position.x, -15)];
+        else if (player.position.y < -15)
+            [player setPosition:CGPointMake(player.position.x, self.scene.size.height+15)];
         [recognizer setTranslation:CGPointZero inView:recognizer.view];
     }
     
