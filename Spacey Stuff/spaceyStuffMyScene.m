@@ -7,6 +7,7 @@
 //
 
 #import "spaceyStuffMyScene.h"
+#import "spaceyStuffViewController.h"
 #include <stdlib.h>
 
 
@@ -15,6 +16,7 @@
 @property (nonatomic) NSTimeInterval lastSpawnTimeInterval;
 @property (nonatomic) NSTimeInterval lastUpdateTimeInterval;
 @property (nonatomic) SKLabelNode* scoreBoard;
+@property (nonatomic) SKLabelNode* gameOver;
 @end
 
 @implementation spaceyStuffMyScene
@@ -33,6 +35,7 @@ int multiplier = 1;
 int lives = 3;
 int asteroidCount = 0;
 int enemyCount = 0;
+int shots = 0;
 bool playerOnScreen = NO;
 bool boardCleared = NO;
 NSString *scoreString;
@@ -80,6 +83,12 @@ CGSize *frameSize;
         self.scoreBoard.fontColor = [SKColor colorWithRed:1 green:1 blue:1 alpha:1];
         self.scoreBoard.position = CGPointMake(self.scene.size.width/2, self.scene.size.height-30);\
         [self addChild:self.scoreBoard];
+        
+        self.gameOver = [SKLabelNode labelNodeWithFontNamed:@"Helvetica"];
+        self.gameOver.position = CGPointMake(self.scene.size.width/2, self.scene.size.height - 60);
+        self.gameOver.text = [NSString stringWithFormat:@"Game Over!"];
+        self.gameOver.fontSize = 24;
+        self.gameOver.fontColor = [SKColor whiteColor];
         
         
 
@@ -221,7 +230,10 @@ CGSize *frameSize;
 }
 
 -(BOOL)doClearBoard {
-    self.scoreBoard.text = [NSString stringWithFormat:@"Game Over!\nFinal Score: %d", score];
+    float accuracy = score/shots;
+    NSLog(@"%f", accuracy);
+    self.scoreBoard.text = [NSString stringWithFormat:@"Final Score: %d Shots: %d Accuracy: %f%%", score, shots, accuracy];
+    [self addChild:self.gameOver];
     [self enumerateChildNodesWithName:[NSString stringWithFormat:@"asteroid"] usingBlock:^(SKNode *node, BOOL *stop) {
         [node removeFromParent];
     }];
@@ -285,24 +297,29 @@ CGSize *frameSize;
     //UITouch * touch = [touches anyObject];
     //CGPoint location = [touch locationInNode:self];
     
-    SKSpriteNode * projectile = [SKSpriteNode spriteNodeWithImageNamed:@"images/PewPew"];
-    projectile.position = CGPointMake(player.position.x+5, player.position.y);
-    CGSize projectileSize = CGSizeMake(15, 25);
-    projectile.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:projectileSize];
-    projectile.physicsBody.dynamic = YES;
-    projectile.physicsBody.categoryBitMask = projectileCategory;
-    projectile.physicsBody.contactTestBitMask = enemyCategory;
-    projectile.physicsBody.collisionBitMask = 0;
-    projectile.physicsBody.usesPreciseCollisionDetection = YES;
+    if (playerOnScreen) {
     
-    [self addChild:projectile];
-    
-    float velocity = 480.0;
-    float realMoveDuration = self.size.width / velocity;
-    CGPoint dest = CGPointMake(self.frame.size.width+10, player.position.y);
-    SKAction * actionMove = [SKAction moveTo:dest duration:realMoveDuration];
-    SKAction * actionMoveDone = [SKAction removeFromParent];
-    [projectile runAction:[SKAction sequence:@[actionMove, actionMoveDone]]];
+        SKSpriteNode * projectile = [SKSpriteNode spriteNodeWithImageNamed:@"images/PewPew"];
+        projectile.position = CGPointMake(player.position.x+5, player.position.y);
+        CGSize projectileSize = CGSizeMake(15, 25);
+        projectile.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:projectileSize];
+        projectile.physicsBody.dynamic = YES;
+        projectile.physicsBody.categoryBitMask = projectileCategory;
+        projectile.physicsBody.contactTestBitMask = enemyCategory;
+        projectile.physicsBody.collisionBitMask = 0;
+        projectile.physicsBody.usesPreciseCollisionDetection = YES;
+        
+        [self addChild:projectile];
+        
+        shots++;
+        
+        float velocity = 480.0;
+        float realMoveDuration = self.size.width / velocity;
+        CGPoint dest = CGPointMake(self.frame.size.width+10, player.position.y);
+        SKAction * actionMove = [SKAction moveTo:dest duration:realMoveDuration];
+        SKAction * actionMoveDone = [SKAction removeFromParent];
+        [projectile runAction:[SKAction sequence:@[actionMove, actionMoveDone]]];
+    }
 }
 
 -(void)resetPlayer {
@@ -317,6 +334,7 @@ CGSize *frameSize;
     if (score % 5 == 0) {
         multiplier++;
     }
+    enemyCount--;
     self.scoreBoard.text = [NSString stringWithFormat:@"Score: %d Multiplier: %d Lives: %d", score, multiplier, lives];
     [projectile removeFromParent];
     [enemy removeFromParent];
@@ -327,20 +345,22 @@ CGSize *frameSize;
     lives = 3;
     multiplier = 1;
     score = 0;
+    shots = 0;
     self.scoreBoard.text = [NSString stringWithFormat:@"Score: %d Multiplier: %d Lives: %d", score, multiplier, lives];
     self.lastSpawnTimeInterval = 0;
     boardCleared = NO;
     [replay removeFromParent];
     [player removeFromParent];
+    [self.gameOver removeFromParent];
     [projectile removeFromParent];
     playerOnScreen = NO;
-    
 }
 
 -(void)asteroid:(SKSpriteNode *)asteroid didCollideWithPlayer:(SKSpriteNode *)player {
     //NSLog(@"Asteroid hit");
     lives--;
     multiplier = 1;
+    asteroidCount--;
     self.scoreBoard.text = [NSString stringWithFormat:@"Score: %d Multiplier: %d Lives: %d", score, multiplier, lives];
     [asteroid removeFromParent];
     [player removeFromParent];

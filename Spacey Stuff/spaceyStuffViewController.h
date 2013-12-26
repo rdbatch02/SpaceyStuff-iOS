@@ -12,6 +12,7 @@
 @interface spaceyStuffViewController : UIViewController
 @property BOOL paused;
 
+-(void)resetGame;
 -(IBAction)pauseButton;
 
 @end

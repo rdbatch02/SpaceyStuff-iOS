@@ -46,6 +46,13 @@ SKView *skView;
     return YES;
 }
 
+-(void)resetGame { //This doesn't work yet, we'll see if I can get it figured out
+    SKScene * scene = [spaceyStuffMyScene sceneWithSize:skView.bounds.size]; //Reload the scene
+    scene.scaleMode = SKSceneScaleModeAspectFill;
+    NSLog(@"New Scene");
+    [skView presentScene:scene]; //Re-present the scene to the display, which destroys the old scene
+}
+
 -(IBAction)pauseButton {
     if (!skView.paused) {
         skView.paused = YES;
