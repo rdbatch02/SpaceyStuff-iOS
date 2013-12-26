@@ -235,9 +235,9 @@ extern int shipValue;
 }
 
 -(BOOL)doClearBoard {
-    float accuracy = score/shots;
-    NSLog(@"%f", accuracy);
-    self.scoreBoard.text = [NSString stringWithFormat:@"Final Score: %d Shots: %d Accuracy: %f%%", score, shots, accuracy];
+    int accuracy = (double)((float)score/(float)shots)*100;
+    NSLog(@"%d", accuracy);
+    self.scoreBoard.text = [NSString stringWithFormat:@"Final Score: %d Shots: %d Accuracy: %d%%", score, shots, accuracy];
     [self addChild:self.gameOver];
     [self enumerateChildNodesWithName:[NSString stringWithFormat:@"asteroid"] usingBlock:^(SKNode *node, BOOL *stop) {
         [node removeFromParent];
@@ -351,6 +351,9 @@ extern int shipValue;
     multiplier = 1;
     score = 0;
     shots = 0;
+    enemyCount = 0;
+    asteroidCount = 0;
+    
     self.scoreBoard.text = [NSString stringWithFormat:@"Score: %d Multiplier: %d Lives: %d", score, multiplier, lives];
     self.lastSpawnTimeInterval = 0;
     boardCleared = NO;
