@@ -31,6 +31,7 @@ SKSpriteNode *enemy;
 SKSpriteNode *background1;
 SKSpriteNode *background2;
 int score = 0;
+int kills = 0;
 int multiplier = 1;
 int lives = 3;
 int asteroidCount = 0;
@@ -235,7 +236,7 @@ extern int shipValue;
 }
 
 -(BOOL)doClearBoard {
-    int accuracy = (double)((float)score/(float)shots)*100;
+    int accuracy = (double)((float)kills/(float)shots)*100;
     NSLog(@"%d", accuracy);
     self.scoreBoard.text = [NSString stringWithFormat:@"Final Score: %d Shots: %d Accuracy: %d%%", score, shots, accuracy];
     [self addChild:self.gameOver];
@@ -300,10 +301,12 @@ extern int shipValue;
 -(void)singleTap:(UITapGestureRecognizer *)gesture {
 //-(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
     //UITouch * touch = [touches anyObject];
-    //CGPoint location = [touch locationInNode:self];
+    //CGPoint location = [gesture locationInNode:self];
+
+    CGPoint location = [gesture locationInView:self.view];
     
-    if (playerOnScreen) {
-    
+    if (playerOnScreen && (location.x < 510 && location.y > 20))
+    {
         SKSpriteNode * projectile = [SKSpriteNode spriteNodeWithImageNamed:@"images/PewPew"];
         projectile.position = CGPointMake(player.position.x+5, player.position.y);
         CGSize projectileSize = CGSizeMake(15, 25);
@@ -336,6 +339,7 @@ extern int shipValue;
 -(void)projectile:(SKSpriteNode *)projectile didCollideWithEnemy:(SKSpriteNode *)enemy {
     //NSLog(@"Hit"); Used for debugging
     score += multiplier;
+    kills++;
     if (score % 5 == 0) {
         multiplier++;
     }
@@ -353,6 +357,7 @@ extern int shipValue;
     shots = 0;
     enemyCount = 0;
     asteroidCount = 0;
+    kills = 0;
     
     self.scoreBoard.text = [NSString stringWithFormat:@"Score: %d Multiplier: %d Lives: %d", score, multiplier, lives];
     self.lastSpawnTimeInterval = 0;
